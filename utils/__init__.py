@@ -1,5 +1,7 @@
-import pyfirmata
+import time
 
-import arduino_utils
+from .arduino_utils import ArduinoNano
 
-print(arduino_utils)
+
+def delay(s):
+    time.sleep(s)
