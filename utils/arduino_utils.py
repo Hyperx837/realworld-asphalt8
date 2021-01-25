@@ -12,13 +12,3 @@ class ArduinoNano(pyfirmata.Board):
             # ''
         }
         super().__init__(layout=nano_layout, *args, **kwargs)
-
-    def digital_write(self, pin, value):
-        self.digital[pin].write(value)
-
-    def digital_read(self, pin):
-        return self.digital[pin].read()
-
-    def pin_mode_out(self, pin):
-        """sets pinmode to output of the pin x"""
-        self.digital[pin].mode = pyfirmata.INPUT
