@@ -1,4 +1,3 @@
-import glob
 from typing import Tuple
 
 import pyautogui
@@ -6,8 +5,7 @@ from pyfirmata import Pin, util
 
 from utils import ArduinoNano
 
-(port,) = glob.glob("/dev/ttyUSB*")
-board = ArduinoNano(port)
+board = ArduinoNano()
 
 it = util.Iterator(board)
 it.start()
