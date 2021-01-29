@@ -12,6 +12,8 @@ it.start()
 
 
 class Button:
+    """this class represents common behaviour of button"""
+
     def __init__(self, pin: str, key: str) -> None:
         self.pin: Pin = board.get_pin(pin)
         self.prev_state = False
