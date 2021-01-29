@@ -12,7 +12,7 @@ it.start()
 
 
 class Button:
-    """this class represents common behaviour of button"""
+    """abstracts common behaviour of button"""
 
     def __init__(self, pin: str, key: str) -> None:
         self.pin: Pin = board.get_pin(pin)
@@ -38,6 +38,8 @@ class Button:
 
 
 class TiltSensor:
+    """abstracts the common behaviour of a tilt sensor"""
+
     def __init__(self, pin: str) -> None:
         self.pin: Pin = board.get_pin(pin)
         self.state = False
@@ -53,6 +55,8 @@ class TiltSensor:
 
 
 class SteerWheel:
+    """functions of steering wheel which is created by combining 2 tilt sensors"""
+
     def __init__(self, left_sensor: TiltSensor, right_sensor: TiltSensor, keymap: dict):
         self.left_sensor = left_sensor
         self.right_sensor = right_sensor
