@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "realworld-asphalt8"
+version = "0.1.0"
+description = "arduino project for a game machine that uses python+firmata"
+authors = ["Anupama Dissanayake <61502343+Anu2001dev@users.noreply.github.com >"]
+license = "mit"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+pyFirmata = "^1.1.0"
+PyAutoGUI = "^0.9.52"
+
+[tool.poetry.dev-dependencies]
+flake8 = "^3.8.4"
+black = "^20.8b1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
