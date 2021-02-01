@@ -14,8 +14,8 @@ it.start()
 class Button:
     """abstracts common behaviour of button"""
 
-    def __init__(self, pin: str, key: str) -> None:
-        self.pin: Pin = board.get_pin(pin)
+    def __init__(self, pin: int, key: str) -> None:
+        self.pin: Pin = board.get_pin(f"d:{pin}:i")
         self.prev_state = False
         self.key = key
         self.pin.read()
@@ -40,8 +40,8 @@ class Button:
 class TiltSensor:
     """abstracts the common behaviour of a tilt sensor"""
 
-    def __init__(self, pin: str) -> None:
-        self.pin: Pin = board.get_pin(pin)
+    def __init__(self, pin: int) -> None:
+        self.pin: Pin = board.get_pin(f"d:{pin}:i")
         self.state = False
         self.read()
 
@@ -79,9 +79,8 @@ class SteerWheel:
             return
         return self.tilt_map[self.tilt]
 
-    @property
-    def key(self) -> str:
-        """returns the key to press when the state is high
+    def key2press(self) -> str:
+        """returns the key to press when the according to the state
 
         Returns:
             str: the key can be a attr of Key class or a string
@@ -91,23 +90,17 @@ class SteerWheel:
         return self.keymap[self.tilt_state]
 
     def check_tilt(self):
-        key, tilt_state, tilt = self.key, self.tilt_state, self.tilt
-        print(key)
-        # if there is a key to press and that key is not pressed
+        key = self.key2press()
+        # print(key)
+        # if there is a key2press and that key is not pressed
         if key and self.key_pressed != key:
             pyautogui.keyDown(key)
 
         elif not key and self.key_pressed:
             pyautogui.keyUp(self.key_pressed)
 
-        # elif key is None and self.key_pressed:
-        # pass
+        # set the key_pressed to the current key (for the next round)
         self.key_pressed = key
-        # if key is None:
-        #     pass
-
-        # else:
-        #     pass
 
     def __repr__(self):
         return (
