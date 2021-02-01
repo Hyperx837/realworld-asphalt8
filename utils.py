@@ -1,6 +1,13 @@
 import glob
+import os
+import sys
 
 import pyfirmata
+from serial import tools
+
+
+class NoValidPortError(Exception):
+    pass
 
 
 class ArduinoNano(pyfirmata.Board):
@@ -10,8 +17,22 @@ class ArduinoNano(pyfirmata.Board):
             "analog": tuple(range(7)),
             "pwm": (3, 5, 6, 9, 10, 11),
             "use_ports": True,
-            "disabled": (0, 1)
-            # ''
+            "disabled": (0, 1),
         }
-        (port,) = glob.glob("/dev/ttyUSB*")
+        if sys.platform == "linux":
+            (port,) = glob.glob("/dev/ttyUSB*")
+
+        elif sys.platform == "win32":
+            comports = tools.list_ports.comports()
+            (port, *_) = (port[0] for port in comports if "arduino" in port[1])
+
+        else:
+            # please set an environment variable for port (recommended) or set port manually
+            port = os.environ.get("PORT")
+
+        if port is None:
+            raise NoValidPortError(
+                "Hasn't Provided a valid port or arduino not plugged"
+            )
+
         super().__init__(layout=layout, port=port, *args, **kwargs)
