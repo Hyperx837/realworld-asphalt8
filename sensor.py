@@ -3,9 +3,13 @@ from typing import Tuple
 import pyautogui
 from pyfirmata import Pin, util
 
-from utils import ArduinoNano
+from utils import ArduinoNano, console
 
-board = ArduinoNano()
+
+print("\n")
+with console.status("[bold yellow] Initializing Board..."):
+    board = ArduinoNano()
+    console.log("[green] Board Initialized!!!")
 
 it = util.Iterator(board)
 it.start()
@@ -71,6 +75,11 @@ class SteerWheel:
 
     @property
     def tilt(self) -> Tuple[bool, bool]:
+        """read sensors and return the output
+
+        Returns:
+            Tuple[bool, bool]: return output in a tuple [0]: left sensor, [1]: right sensor
+        """
         return self.left_sensor.read(), self.right_sensor.read()
 
     @property

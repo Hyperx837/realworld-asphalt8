@@ -3,10 +3,17 @@ import os
 import sys
 
 import pyfirmata
+from rich.console import Console
 from serial import tools
+
+console = Console()
 
 
 class NoValidPortError(Exception):
+    pass
+
+
+class BoardNotPluggedError(Exception):
     pass
 
 
@@ -20,7 +27,11 @@ class ArduinoNano(pyfirmata.Board):
             "disabled": (0, 1),
         }
         if sys.platform == "linux":
-            (port,) = glob.glob("/dev/ttyUSB*")
+            try:
+                (port,) = glob.glob("/dev/ttyUSB*")
+
+            except ValueError:
+                raise BoardNotPluggedError
 
         elif sys.platform == "win32":
             comports = tools.list_ports.comports()

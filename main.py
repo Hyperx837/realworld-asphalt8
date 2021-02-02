@@ -2,6 +2,7 @@ import time
 from typing import List, Union
 
 from sensor import Button, SteerWheel, TiltSensor
+from utils import console
 
 nitro_btn = Button(2, " ")
 accel_btn = Button(3, "w")
@@ -19,23 +20,27 @@ steer = SteerWheel(left_tilt, right_tilt, keymap)
 # all sensors
 sensors: List[Union[TiltSensor, Button]] = []
 
+clear_line = "\033[A\033[A"
+
 
 def main() -> None:
     """run this code until arduino turns off"""
-    # print(nitro_btn.read())
     for button in buttons:
         button.press_on_click()
 
     # steer.check_tilt()
+    # print(clear_line)
     print(*buttons, steer)
     time.sleep(0.01)
 
 
 if __name__ == "__main__":
-    print("main program starting...")
     while True:
         try:
             main()
+            print(clear_line)
         except KeyboardInterrupt:
-            print("Exiting...")
-            exit()
+            print(clear_line, "\n")
+            break
+
+    console.log("[bold cyan]Exiting...")
