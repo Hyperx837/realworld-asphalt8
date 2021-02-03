@@ -1,9 +1,9 @@
-from typing import Tuple
+from typing import Generator, Tuple
 
 import pyautogui
 from pyfirmata import Pin
 
-from utils import ArduinoNano, colorize, console
+from utils import ArduinoNano, colorize, console, get_color
 
 print()
 with console.status(
@@ -11,11 +11,6 @@ with console.status(
 ):
     board = ArduinoNano()
     console.log("[green] Board Initialized!!!")
-
-
-def get_color(text: bool):
-    color = "green" if text else "red"
-    return colorize(str(text), color)
 
 
 class Button:
@@ -41,8 +36,7 @@ class Button:
         self.prev_state = self.state
 
     def __repr__(self) -> str:
-        color = "green" if self.state else "red"
-        return colorize(f"Button({colorize(self.state, color)})", "yellow")
+        return colorize(f"Button({get_color(self.state)})", "yellow")
 
 
 class TiltSensor:
@@ -74,9 +68,9 @@ class SteerWheel:
             (True, False): "right",
             (False, True): "left",
             (False, False): "straight",  # for development
+            (None, None): "",
         }
-        self.key_pressed: str = None
-        self.colors = None
+        self.key_pressed: str = ""
 
     @property
     def tilt(self) -> Tuple[bool, bool]:
@@ -85,14 +79,14 @@ class SteerWheel:
         Returns:
             Tuple[bool, bool]: return output in a tuple [0]: left sensor, [1]: right sensor
         """
-        sensor_vals = self.left_sensor.read(), self.right_sensor.read()
-        self.colors = (str(get_color(val)) for val in sensor_vals)
-        return sensor_vals
+        return (self.left_sensor.read(), self.right_sensor.read())
+
+    @property
+    def colors(self) -> Generator[str, None, None]:
+        return (get_color(val) for val in self.tilt)
 
     @property
     def tilt_state(self) -> str:
-        if self.tilt == (None, None):
-            return
         return self.tilt_map[self.tilt]
 
     def key2press(self) -> str:
@@ -107,7 +101,6 @@ class SteerWheel:
 
     def check_tilt(self):
         key = self.key2press()
-        # print(key)
         # if there is a key2press and that key is not pressed
         if key and self.key_pressed != key:
             pyautogui.keyDown(key)
