@@ -1,18 +1,21 @@
 from typing import Tuple
 
 import pyautogui
-from pyfirmata import Pin, util
+from pyfirmata import Pin
 
-from utils import ArduinoNano, console
+from utils import ArduinoNano, colorize, console
 
-
-print("\n")
-with console.status("[bold yellow] Initializing Board..."):
+print()
+with console.status(
+    "[bold steel_blue]Establishing Connection with Board...", spinner="dots12"
+):
     board = ArduinoNano()
     console.log("[green] Board Initialized!!!")
 
-it = util.Iterator(board)
-it.start()
+
+def get_color(text: bool):
+    color = "green" if text else "red"
+    return colorize(str(text), color)
 
 
 class Button:
@@ -38,7 +41,8 @@ class Button:
         self.prev_state = self.state
 
     def __repr__(self) -> str:
-        return f"Button({self.state})"
+        color = "green" if self.state else "red"
+        return colorize(f"Button({colorize(self.state, color)})", "yellow")
 
 
 class TiltSensor:
@@ -72,15 +76,18 @@ class SteerWheel:
             (False, False): "straight",  # for development
         }
         self.key_pressed: str = None
+        self.colors = None
 
     @property
     def tilt(self) -> Tuple[bool, bool]:
-        """read sensors and return the output
+        """read sensors and return the output, update colors
 
         Returns:
             Tuple[bool, bool]: return output in a tuple [0]: left sensor, [1]: right sensor
         """
-        return self.left_sensor.read(), self.right_sensor.read()
+        sensor_vals = self.left_sensor.read(), self.right_sensor.read()
+        self.colors = (str(get_color(val)) for val in sensor_vals)
+        return sensor_vals
 
     @property
     def tilt_state(self) -> str:
@@ -112,6 +119,7 @@ class SteerWheel:
         self.key_pressed = key
 
     def __repr__(self):
-        return (
-            f"SteerWheel({self.tilt_state}, left={self.tilt[0]}, right={self.tilt[1]})"
+        status = "{}, left={}, right={}".format(
+            colorize(self.tilt_state, "cyan"), *self.colors
         )
+        return colorize(f"SteerWheel({status})", "purple")

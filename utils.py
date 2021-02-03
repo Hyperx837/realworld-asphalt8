@@ -6,7 +6,7 @@ import pyfirmata
 from rich.console import Console
 from serial import tools
 
-console = Console()
+console = Console(highlight=False)
 
 
 class NoValidPortError(Exception):
@@ -15,6 +15,15 @@ class NoValidPortError(Exception):
 
 class BoardNotPluggedError(Exception):
     pass
+
+
+def colorize(text: str, color: str) -> str:
+    return f"[{color}]{text}[/{color}]"
+
+
+def get_color(text: bool):
+    color = "green" if text else "red"
+    return colorize(str(text), color)
 
 
 class ArduinoNano(pyfirmata.Board):
@@ -47,3 +56,6 @@ class ArduinoNano(pyfirmata.Board):
             )
 
         super().__init__(layout=layout, port=port, *args, **kwargs)
+
+        it = pyfirmata.util.Iterator(self)
+        it.start()
