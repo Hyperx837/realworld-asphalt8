@@ -1,12 +1,12 @@
 import time
 from threading import Thread
-from typing import List
+from typing import List, Union
 
 from sensor import Button, SteerWheel, TiltSensor
 from utils import console
 
 
-def log_status(sensors: tuple):
+def log_status(sensors: list):
     """logs the status of given sensor with a 1 min delay
 
     Args:
@@ -15,7 +15,7 @@ def log_status(sensors: tuple):
     print()
     while run_program:
         print(clear_line)
-        console.log(f"{sensors}")
+        console.log(*sensors)
         time.sleep(1)
 
 
@@ -47,11 +47,11 @@ left_tilt = TiltSensor(5)
 right_tilt = TiltSensor(6)
 
 # steer wheel
-keymap = {"right": "d", "left": "a"}
+keymap = {"straight": "", "right": "d", "left": "a"}
 steer = SteerWheel(left_tilt, right_tilt, keymap)
 
 # all sensors
-sensors = (*buttons, steer)
+sensors: List[Union[SteerWheel, Button]] = [*buttons, steer]
 
 clear_line = "\033[A\033[A"
 run_program = True
