@@ -2,7 +2,7 @@ import time
 from threading import Thread
 from typing import List, Union
 
-from sensor import Button, SteerWheel, TiltSensor
+from sensor import Button, SteerWheel
 from utils import console
 
 
@@ -15,7 +15,7 @@ def log_status(sensors: list):
     print()
     while run_program:
         print(clear_line)
-        console.log(*sensors)
+        console.log(f"{sensors}")
         time.sleep(1)
 
 
@@ -37,18 +37,12 @@ def main() -> None:
     console.log("[bold cyan]Exiting...")
 
 
-nitro_btn = Button(2, " ")
-accel_btn = Button(3, "w")
-brake_btn = Button(4, "s")
-buttons: List[Button] = [nitro_btn, accel_btn, brake_btn]
-
-# tilt sensors
-left_tilt = TiltSensor(5)
-right_tilt = TiltSensor(6)
+button_data = {2: " ", 3: "w", 4: "s"}
+buttons: List[Button] = [Button(pin, key) for pin, key in button_data.items()]
 
 # steer wheel
 keymap = {"straight": "", "right": "d", "left": "a"}
-steer = SteerWheel(left_tilt, right_tilt, keymap)
+steer = SteerWheel(left_pin=5, right_pin=6, keymap=keymap)
 
 # all sensors
 sensors: List[Union[SteerWheel, Button]] = [*buttons, steer]

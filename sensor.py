@@ -13,14 +13,31 @@ with console.status(
     console.log("[green] Board Initialized!!!")
 
 
-class Button:
+class Sensor:
+    """abstracts the common behaviour of a tilt sensor"""
+
+    def __init__(self, pin: int) -> None:
+        self.pin: Pin = board.get_pin(f"d:{pin}:i")
+        self.pin.read()
+        # self.read()
+
+    @property
+    def state(self) -> bool:
+        """returns the state of the pin (high or low).
+
+        Returns:
+            bool: True for high, False for low
+        """
+        return self.pin.read()
+
+
+class Button(Sensor):
     """abstracts common behaviour of button"""
 
     def __init__(self, pin: int, key: str) -> None:
-        self.pin: Pin = board.get_pin(f"d:{pin}:i")
         self.prev_state = False
         self.key = key
-        self.pin.read()
+        super().__init__(pin)
 
     @property
     def state(self) -> bool:
@@ -44,32 +61,12 @@ class Button:
         return colorize(f"Button({get_color(self.state)})", "yellow")
 
 
-class TiltSensor:
-    """abstracts the common behaviour of a tilt sensor"""
-
-    def __init__(self, pin: int) -> None:
-        self.pin: Pin = board.get_pin(f"d:{pin}:i")
-        self.state = False
-        self.read()
-        # self.read()
-
-    def read(self) -> bool:
-        """returns the state of the pin (high or low).
-
-        Returns:
-            bool: True for high, False for low
-        """
-        return self.pin.read()
-
-
 class SteerWheel:
     """functions of steering wheel which is created by combining 2 tilt sensors"""
 
-    def __init__(
-        self, left_sensor: TiltSensor, right_sensor: TiltSensor, keymap: dict
-    ) -> None:
-        self.left_sensor = left_sensor
-        self.right_sensor = right_sensor
+    def __init__(self, *, left_pin: int, right_pin: int, keymap: dict) -> None:
+        self.left_sensor = Sensor(left_pin)
+        self.right_sensor = Sensor(right_pin)
         self.keymap = keymap
         self.tilt_map = {
             (True, True): "straight",
@@ -87,7 +84,7 @@ class SteerWheel:
         Returns:
             Tuple[bool, bool]: return output in a tuple [0]: left sensor, [1]: right sensor
         """
-        return (self.left_sensor.read(), self.right_sensor.read())
+        return (self.left_sensor.state, self.right_sensor.state)
 
     @property
     def colors(self) -> Generator[str, None, None]:
