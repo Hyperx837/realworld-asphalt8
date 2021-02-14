@@ -19,16 +19,22 @@ class Sensor:
     def __init__(self, pin: int) -> None:
         self.pin: Pin = board.get_pin(f"d:{pin}:i")
         self.pin.read()
+        self._state: bool = False
+        self.prev_state: bool = False
         # self.read()
 
     @property
     def state(self) -> bool:
-        """returns the state of the pin (high or low).
+        """returns the state of the pin (high or low). if pin is None return False
+        side effect: sets previous state
 
         Returns:
             bool: True for high, False for low
         """
-        return self.pin.read()
+        if self.__dict__.get("state"):
+            self.prev_state = self._state
+        self._state = self.pin.read()
+        return self._state or False
 
 
 class Button(Sensor):
@@ -39,16 +45,7 @@ class Button(Sensor):
         self.key = key
         super().__init__(pin)
 
-    @property
-    def state(self) -> bool:
-        """returns the value of the button pin
-
-        Returns:
-            bool: True for high False for low
-        """
-        return self.pin.read()
-
-    def press_on_click(self) -> None:
+    def onchange(self) -> None:
         if self.state and not self.prev_state:
             pyautogui.keyDown(self.key)
 
@@ -76,9 +73,10 @@ class SteerWheel:
             (None, None): "",
         }
         self.key_pressed: str = ""
+        self.prev_state: Tuple[bool, bool] = (False, False)
 
     @property
-    def tilt(self) -> Tuple[bool, bool]:
+    def state(self) -> Tuple[bool, bool]:
         """read sensors and return the output, update colors
 
         Returns:
@@ -88,22 +86,26 @@ class SteerWheel:
 
     @property
     def colors(self) -> Generator[str, None, None]:
-        return (get_color(val) for val in self.tilt)
+        return (get_color(val) for val in self.state)
 
     @property
     def tilt_state(self) -> str:
-        return self.tilt_map[self.tilt]
+        return self.tilt_map[self.state]
 
-    def check_tilt(self) -> None:
+    def onchange(self) -> None:
         key: str = self.keymap.get(self.tilt_state, "")
 
-        # if there is a key2press and that key is not pressed
-        if key and self.key_pressed != key:
-            pyautogui.keyDown(key)
+        # if there is a key to press
+        if key:
+            #  and that key is not the key already pressed
+            if self.key_pressed != key:
+                pyautogui.keyDown(key)
+                pyautogui.keyUp(self.key_pressed)
 
         elif not key and self.key_pressed:
             pyautogui.keyUp(self.key_pressed)
 
+        self.prev_state = self.state
         # set the key_pressed to the current key (for the next round)
         self.key_pressed = key
 
