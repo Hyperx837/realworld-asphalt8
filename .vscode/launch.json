@@ -8,8 +8,8 @@
       "name": "run main.py",
       "type": "python",
       "request": "launch",
-      "program": "${workspaceFolder}/main.py",
-      "console": "integratedTerminal"
+      "program": "${workspaceFolder}/main.py"
+      // "console": "externalTerminal"
     },
     {
       "name": "Python: Current File",
@@ -18,4 +18,5 @@
       "program": "${file}",
       "console": "integratedTerminal"
     }
+  ]
 }
