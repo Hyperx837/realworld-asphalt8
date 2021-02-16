@@ -1,15 +1,3 @@
-<!-- # What is Real World - Asphalt8?
-
-Asphalt 8 is a game as some of you might know and `readlworld-asphalt8` builds a physical controller for that.
-
-<img src="demos/front.jpg" alt="front image">
-<img src="demos/side.jpg" alt="side image">
-<img src="demos/back.jpg" alt="back image">
-
-this project is using arduino standard firmata sketch as a bridge to communicate python and uses rich for colorized logging output.
-
-<video src="./demos/output.mkv"> -->
-
 # Real World - Asphalt8
 
 real world asphalt (RWA in short) is a physical controller for Asphalt8 (by changing keys can be used in other games). Since python can't directly communicate with arduino firmata is used as a bridge. following are some demos of the project.
