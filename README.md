@@ -15,7 +15,7 @@ this project is using arduino standard firmata sketch as a bridge to communicate
 real world asphalt (RWA in short) is a physical controller for Asphalt8 (by changing keys can be used in other games). Since python can't directly communicate with arduino firmata is used as a bridge. following are some demos of the project.
 
 <img src="./demos/front.jpeg" alt="front" width="300">
-<img src="./demos/side.jpeg" alt="side" width="300">
+<img src="./demos/side.jpeg" alt="side" width="300" style="float: right">
 <br><br>
 <img src="./demos/output.gif">
 
