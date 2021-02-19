@@ -21,7 +21,6 @@ class Sensor:
         self.pin.read()
         self._state: bool = False
         self.prev_state: bool = False
-        # self.read()
 
     @property
     def state(self) -> bool:
@@ -80,13 +79,14 @@ class SteerWheel:
         """read sensors and return the output, update colors
 
         Returns:
-            Tuple[bool, bool]: return output in a tuple [0]: left sensor, [1]: right sensor
+            Tuple[bool, bool]: return output in a tuple [0]: left sensor,
+            [1]: right sensor
         """
         return (self.left_sensor.state, self.right_sensor.state)
 
     @property
     def colors(self) -> Generator[str, None, None]:
-        return (get_color(val) for val in self.state)
+        return (get_color(state) for state in self.state)
 
     @property
     def tilt_state(self) -> str:

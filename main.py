@@ -14,7 +14,6 @@ steer = SteerWheel(left_pin=5, right_pin=6, keymap=keymap)
 # all sensors
 SENSOR_TYPE = Union[SteerWheel, Button]
 sensors: List[SENSOR_TYPE] = [*buttons, steer]
-prev_state = {sensor: sensor.state for sensor in sensors}
 
 clear_line = "\033[A\033[A"
 
@@ -35,11 +34,11 @@ async def detect_change() -> None:
 
 
 async def main():
+    print()
     await asyncio.gather(detect_change(), log_status())
 
 
 if __name__ == "__main__":
-    print()
     try:
         asyncio.run(main())
 
