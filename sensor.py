@@ -3,11 +3,12 @@ from typing import Generator, Tuple
 import pyautogui
 from pyfirmata import Pin
 
-from utils import ArduinoNano, colorize, console, get_color
+from utils import ArduinoNano, colorize, console, get_color, port
 
 print()
 with console.status(
-    "[bold steel_blue]Establishing Connection with Board...", spinner="dots12"
+    f"[bold steel_blue]Establishing Connection with Board at {port}...",
+    spinner="dots12",
 ):
     board = ArduinoNano()
     console.log("[green] Board Initialized!!!")
@@ -60,9 +61,11 @@ class Button(Sensor):
 class SteerWheel:
     """functions of steering wheel which is created by combining 2 tilt sensors"""
 
-    def __init__(self, *, left_pin: int, right_pin: int, keymap: dict) -> None:
-        self.left_sensor = Sensor(left_pin)
-        self.right_sensor = Sensor(right_pin)
+    def __init__(
+        self, *, left_sensor_pin: int, right_sensor_pin: int, keymap: dict
+    ) -> None:
+        self.left_sensor = Sensor(left_sensor_pin)
+        self.right_sensor = Sensor(right_sensor_pin)
         self.keymap = keymap
         self.tilt_map = {
             (True, True): "straight",
@@ -95,12 +98,10 @@ class SteerWheel:
     def onchange(self) -> None:
         key: str = self.keymap.get(self.tilt_state, "")
 
-        # if there is a key to press
-        if key:
-            #  and that key is not the key already pressed
-            if self.key_pressed != key:
-                pyautogui.keyDown(key)
-                pyautogui.keyUp(self.key_pressed)
+        # if there is a key to press and that key is not the key already pressed
+        if key and self.key_pressed != key:
+            pyautogui.keyDown(key)
+            pyautogui.keyUp(self.key_pressed)
 
         elif not key and self.key_pressed:
             pyautogui.keyUp(self.key_pressed)

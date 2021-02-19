@@ -1,46 +1,38 @@
-import asyncio
-from typing import List, Union
+import time
+from typing import Set, Union
 
 from sensor import Button, SteerWheel
-from utils import console, forever
+from utils import console
 
-button_data = {2: " ", 3: "w", 4: "s"}
-buttons: List[Button] = [Button(pin, key) for pin, key in button_data.items()]
+# button_data = {2: " ", 3: "w", 4: "s"}
+button_data = {2: " ", 3: "w"}
+buttons: Set[Button] = {Button(pin, key) for pin, key in button_data.items()}
 
-# steer wheel
+# keys to press when steer wheel is straight or turned right or left
 keymap = {"straight": "", "right": "d", "left": "a"}
-steer = SteerWheel(left_pin=5, right_pin=6, keymap=keymap)
+steer = SteerWheel(left_sensor_pin=5, right_sensor_pin=6, keymap=keymap)
 
 # all sensors
 SENSOR_TYPE = Union[SteerWheel, Button]
-sensors: List[SENSOR_TYPE] = [*buttons, steer]
+sensors: Set[SENSOR_TYPE] = {*buttons, steer}
 
 clear_line = "\033[A\033[A"
 
 
-@forever(delay=1)
-async def log_status():
-    """logs the status of given sensor with a 1 min delay"""
-    print(clear_line)
-    console.log(f"{sensors}")
-
-
-@forever(delay=0.01)
-async def detect_change() -> None:
+def main() -> None:
     """run this code until arduino turns off"""
-    for sensor in sensors:
-        if sensor.prev_state != sensor.state:
-            sensor.onchange()
-
-
-async def main():
-    print()
-    await asyncio.gather(detect_change(), log_status())
+    while True:
+        for sensor in sensors:
+            if sensor.prev_state != sensor.state:
+                sensor.onchange()
+                print(clear_line)
+                console.log(f"{sensors}")
+        time.sleep(0.01)
 
 
 if __name__ == "__main__":
     try:
-        asyncio.run(main())
+        main()
 
     except KeyboardInterrupt:
         print(clear_line, "\n")
