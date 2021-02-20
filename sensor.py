@@ -34,7 +34,10 @@ class Sensor:
         if self.__dict__.get("state"):
             self.prev_state = self._state
         self._state = self.pin.read()
-        return self._state or False
+        return self._state
+
+    def is_changed(self):
+        return self.prev_state != self.state
 
 
 class Button(Sensor):
@@ -54,8 +57,20 @@ class Button(Sensor):
 
         self.prev_state = self.state
 
+    @property
+    def state(self) -> bool:
+        """buttons are pulled up. gives 0 when pressed and 1 when
+        released. have to inverse the input to get correct results
+
+        Returns:
+            bool: [description]
+        """
+        return not super().state
+
     def __repr__(self) -> str:
-        return colorize(f"Button({get_color(self.state)})", "yellow")
+        return colorize(
+            f"Button({self.pin.pin_number}, {get_color(self.state)})", "yellow"
+        )
 
 
 class SteerWheel:
@@ -109,6 +124,9 @@ class SteerWheel:
         self.prev_state = self.state
         # set the key_pressed to the current key (for the next round)
         self.key_pressed = key
+
+    def is_changed(self):
+        return self.prev_state != self.state
 
     def __repr__(self) -> str:
         status = "{}, left={}, right={}".format(

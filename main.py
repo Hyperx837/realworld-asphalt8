@@ -4,8 +4,8 @@ from typing import Set, Union
 from sensor import Button, SteerWheel
 from utils import console
 
+button_data = {3: "w", 4: "s"}
 # button_data = {2: " ", 3: "w", 4: "s"}
-button_data = {2: " ", 3: "w"}
 buttons: Set[Button] = {Button(pin, key) for pin, key in button_data.items()}
 
 # keys to press when steer wheel is straight or turned right or left
@@ -23,7 +23,7 @@ def main() -> None:
     """run this code until arduino turns off"""
     while True:
         for sensor in sensors:
-            if sensor.prev_state != sensor.state:
+            if sensor.is_changed():
                 sensor.onchange()
                 print(clear_line)
                 console.log(f"{sensors}")
