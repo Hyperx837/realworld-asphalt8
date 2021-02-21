@@ -5,7 +5,7 @@ import sys
 import pyfirmata
 import serial
 from rich.console import Console
-from serial import tools
+from serial.tools import list_ports
 
 console = Console(highlight=False)
 
@@ -27,19 +27,18 @@ def get_color(text: bool):
     return colorize(str(text), color)
 
 
-def get_port(port=None):
-    if port is None:
-        if sys.platform == "linux":
-            try:
-                (port,) = glob.glob("/dev/ttyUSB*")
-            except ValueError:
-                raise BoardNotPluggedError
-        elif sys.platform == "win32":
-            comports = tools.list_ports.comports()
-            (port, *_) = (port[0] for port in comports if "arduino" in port[1])
-        else:
-            # set an environment variable for port or set port manually
-            port = os.environ.get("PORT")
+def get_port():
+    if sys.platform == "linux":
+        try:
+            (port,) = glob.glob("/dev/ttyUSB*")
+        except ValueError:
+            raise BoardNotPluggedError
+    elif sys.platform == "win32":
+        comports = list_ports.comports()
+        (port, *_) = (port[0] for port in comports if "USB-SERIAL" in port[1])
+    else:
+        # set an environment variable for port or set port manually
+        port = os.environ.get("PORT")
 
     return port
 
@@ -48,7 +47,7 @@ port = get_port()
 
 
 class ArduinoNano(pyfirmata.Board):
-    def __init__(self, port=None, *args, **kwargs):
+    def __init__(self, port=port, *args, **kwargs):
         layout = {
             "digital": (1, 0, *range(2, 14)),
             "analog": tuple(range(7)),
@@ -56,7 +55,6 @@ class ArduinoNano(pyfirmata.Board):
             "use_ports": True,
             "disabled": (0, 1),
         }
-        port = get_port(port)
         try:
             super().__init__(layout=layout, port=port, *args, **kwargs)
 
