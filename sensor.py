@@ -49,10 +49,10 @@ class Button(Sensor):
         super().__init__(pin)
 
     def onchange(self) -> None:
-        if self.state and not self.prev_state:
+        if self.state:
             pyautogui.keyDown(self.key)
 
-        elif self.prev_state and not self.state:
+        else:
             pyautogui.keyUp(self.key)
 
         self.prev_state = self.state

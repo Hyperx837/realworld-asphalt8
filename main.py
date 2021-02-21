@@ -4,13 +4,12 @@ from typing import Set, Union
 from sensor import Button, SteerWheel
 from utils import console
 
-button_data = {3: "w", 4: "s"}
-# button_data = {2: " ", 3: "w", 4: "s"}
+button_data = {10: "w", 11: " ", 12: "s"}
 buttons: Set[Button] = {Button(pin, key) for pin, key in button_data.items()}
 
 # keys to press when steer wheel is straight or turned right or left
 keymap = {"straight": "", "right": "d", "left": "a"}
-steer = SteerWheel(left_sensor_pin=5, right_sensor_pin=6, keymap=keymap)
+steer = SteerWheel(left_sensor_pin=2, right_sensor_pin=3, keymap=keymap)
 
 # all sensors
 SENSOR_TYPE = Union[SteerWheel, Button]
