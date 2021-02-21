@@ -4,7 +4,7 @@ from typing import Set, Union
 from sensor import Button, SteerWheel
 from utils import console
 
-button_data = {10: "w", 11: " ", 12: "s"}
+button_data = {10: "s", 11: " ", 12: "w"}
 buttons: Set[Button] = {Button(pin, key) for pin, key in button_data.items()}
 
 # keys to press when steer wheel is straight or turned right or left
