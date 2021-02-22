@@ -9,7 +9,7 @@ buttons: Set[Button] = {Button(pin, key) for pin, key in button_data.items()}
 
 # keys to press when steer wheel is straight or turned right or left
 keymap = {"straight": "", "right": "d", "left": "a"}
-steer = SteerWheel(left_sensor_pin=2, right_sensor_pin=3, keymap=keymap)
+steer = SteerWheel(keymap)
 
 # all sensors
 SENSOR_TYPE = Union[SteerWheel, Button]

@@ -50,7 +50,7 @@ class ArduinoNano(pyfirmata.Board):
     def __init__(self, port=port, *args, **kwargs):
         layout = {
             "digital": (1, 0, *range(2, 14)),
-            "analog": tuple(range(7)),
+            "analog": tuple(range(8)),
             "pwm": (3, 5, 6, 9, 10, 11),
             "use_ports": True,
             "disabled": (0, 1),

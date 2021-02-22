@@ -1,4 +1,4 @@
-from typing import Generator, Tuple
+from typing import Union
 
 import pyautogui
 from pyfirmata import Pin
@@ -15,25 +15,21 @@ with console.status(
 
 
 class Sensor:
-    """abstracts the common behaviour of a tilt sensor"""
-
-    def __init__(self, pin: int) -> None:
-        self.pin: Pin = board.get_pin(f"d:{pin}:i")
-        self.pin.read()
-        self._state: bool = False
-        self.prev_state: bool = False
+    def __init__(self) -> None:
+        self.pin: Pin
+        self._state: Union[bool, int] = False
+        self.prev_state: Union[bool, int] = False
 
     @property
-    def state(self) -> bool:
+    def state(self) -> Union[bool, int]:
         """returns the state of the pin (high or low). if pin is None return False
         side effect: sets previous state
 
         Returns:
             bool: True for high, False for low
         """
-        if self.__dict__.get("state"):
-            self.prev_state = self._state
         self._state = self.pin.read()
+        self.prev_state = self.__dict__.get("state", False)
         return self._state
 
     def is_changed(self):
@@ -44,9 +40,22 @@ class Button(Sensor):
     """abstracts common behaviour of button"""
 
     def __init__(self, pin: int, key: str) -> None:
-        self.prev_state = False
+        super().__init__()
+        self.pin: Pin = board.get_pin(f"d:{pin}:i")
+        self._state: bool = False
+        self.prev_state: bool = False
         self.key = key
-        super().__init__(pin)
+
+    @property
+    def state(self) -> bool:
+        """
+        buttons are pulled up. have to inverse the input to
+        get correct results
+
+        Returns:
+            bool: True for low, False for high
+        """
+        return not super().state
 
     def onchange(self) -> None:
         if self.state:
@@ -57,58 +66,37 @@ class Button(Sensor):
 
         self.prev_state = self.state
 
-    @property
-    def state(self) -> bool:
-        """buttons are pulled up. gives 0 when pressed and 1 when
-        released. have to inverse the input to get correct results
-
-        Returns:
-            bool: [description]
-        """
-        return not super().state
-
     def __repr__(self) -> str:
         return colorize(
             f"Button({self.pin.pin_number}, {get_color(self.state)})", "yellow"
         )
 
 
-class SteerWheel:
-    """functions of steering wheel which is created by combining 2 tilt sensors"""
-
-    def __init__(
-        self, *, left_sensor_pin: int, right_sensor_pin: int, keymap: dict
-    ) -> None:
-        self.left_sensor = Sensor(left_sensor_pin)
-        self.right_sensor = Sensor(right_sensor_pin)
+class SteerWheel(Sensor):
+    def __init__(self, keymap: dict) -> None:
+        super().__init__()
+        self.pin: Pin = board.get_pin("a:7:i")
         self.keymap = keymap
-        self.tilt_map = {
-            (True, True): "straight",
-            (True, False): "right",
-            (False, True): "left",
-            (False, False): "straight",  # for development
-            (None, None): "",
-        }
+        self.prev_state: int = 0
+        self.initial: int = 0
+        self.initialize_input()
+        self.mid_start = self.initial - 0.05
+        self.mid_end = self.initial + 0.05
         self.key_pressed: str = ""
-        self.prev_state: Tuple[bool, bool] = (False, False)
+
+    def initialize_input(self):
+        while not self.initial:
+            self.initial = self.state
 
     @property
-    def state(self) -> Tuple[bool, bool]:
-        """read sensors and return the output, update colors
+    def tilt_state(self):
+        if self.state > self.mid_end:
+            return "right"
 
-        Returns:
-            Tuple[bool, bool]: return output in a tuple [0]: left sensor,
-            [1]: right sensor
-        """
-        return (self.left_sensor.state, self.right_sensor.state)
+        elif self.state < self.mid_start:
+            return "left"
 
-    @property
-    def colors(self) -> Generator[str, None, None]:
-        return (get_color(state) for state in self.state)
-
-    @property
-    def tilt_state(self) -> str:
-        return self.tilt_map[self.state]
+        return "straight"
 
     def onchange(self) -> None:
         key: str = self.keymap.get(self.tilt_state, "")
@@ -125,11 +113,9 @@ class SteerWheel:
         # set the key_pressed to the current key (for the next round)
         self.key_pressed = key
 
-    def is_changed(self):
-        return self.prev_state != self.state
-
-    def __repr__(self) -> str:
-        status = "{}, left={}, right={}".format(
-            colorize(self.tilt_state, "cyan"), *self.colors
+    def __repr__(self):
+        return colorize(
+            f"SteerWheel({colorize(self.tilt_state, 'yellow')}, \
+                {colorize(self.state, 'cyan')})",
+            "purple",
         )
-        return colorize(f"SteerWheel({status})", "purple")
