@@ -4,7 +4,7 @@ from typing import Union
 import pyautogui
 from pyfirmata import Pin
 
-from utils import ArduinoNano, colorize, console, exit_program, get_color, port
+from utils import ArduinoNano, colorize, console, get_color, port
 
 print()
 with console.status(

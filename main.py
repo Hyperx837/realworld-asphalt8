@@ -1,5 +1,5 @@
 import asyncio
-from typing import Awaitable, Generator, List, Set, Union
+from typing import Awaitable, List, Set, Union
 
 from sensor import Button, SteerWheel
 from utils import console, exit_program
@@ -23,26 +23,27 @@ async def log_status():
     while True:
         print(clear_line)
         console.log(f"{sensors}")
-        asyncio.sleep(1)
+        await asyncio.sleep(1)
 
 
 async def main() -> None:
     """run this code until arduino turns off"""
-    asyncio.create_task(log_status())
-    while True:
-        changed_sensors: List[Awaitable] = [
-            sensor.onchange() for sensor in sensors if sensor.is_changed()
-        ]
-        asyncio.gather(*changed_sensors)
-
-        await asyncio.sleep(0.01)
-
-
-if __name__ == "__main__":
     try:
-        asyncio.run(main())
+        logger = asyncio.create_task(log_status())
+        while True:
+            changed_sensors: List[Awaitable] = [
+                sensor.onchange() for sensor in sensors if sensor.is_changed()
+            ]
+            asyncio.gather(*changed_sensors)
+
+            await asyncio.sleep(0.01)
 
     except KeyboardInterrupt:
+        logger.cancel()
         print(clear_line, "\n")
 
     exit_program()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
