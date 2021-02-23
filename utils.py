@@ -43,6 +43,11 @@ def get_port():
     return port
 
 
+def exit_program():
+    console.log("[bold cyan]Exiting...")
+    exit()
+
+
 port = get_port()
 
 
@@ -59,9 +64,7 @@ class ArduinoNano(pyfirmata.Board):
             super().__init__(layout=layout, port=port, *args, **kwargs)
 
         except serial.SerialException:
-            console.log("[red] No valid port found!!")
-            console.log("[bold cyan]Exiting...")
-            exit()
+            exit_program()
 
         it = pyfirmata.util.Iterator(self)
         it.start()

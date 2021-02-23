@@ -1,9 +1,10 @@
+import asyncio
 from typing import Union
 
 import pyautogui
 from pyfirmata import Pin
 
-from utils import ArduinoNano, colorize, console, get_color, port
+from utils import ArduinoNano, colorize, console, exit_program, get_color, port
 
 print()
 with console.status(
@@ -57,7 +58,7 @@ class Button(Sensor):
         """
         return not super().state
 
-    def onchange(self) -> None:
+    async def onchange(self) -> None:
         if self.state:
             pyautogui.keyDown(self.key)
 
@@ -65,6 +66,7 @@ class Button(Sensor):
             pyautogui.keyUp(self.key)
 
         self.prev_state = self.state
+        await asyncio.sleep(0.1)
 
     def __repr__(self) -> str:
         return colorize(
@@ -80,16 +82,27 @@ class SteerWheel(Sensor):
         self.prev_state: int = 0
         self.initial: int = 0
         self.initialize_input()
-        self.mid_start = self.initial - 0.05
-        self.mid_end = self.initial + 0.05
+        self.range = 0.08
+        self.mid_start = self.initial - self.range
+        self.mid_end = self.initial + self.range
+        console.log(
+            f"[bold cyan] Steering Wheel middle ranging from {self.mid_start} to \
+            {self.mid_end}"
+        )
         self.key_pressed: str = ""
 
-    def initialize_input(self):
+    def initialize_input(self) -> None:
+        """initialize"""
+        count = 0
         while not self.initial:
             self.initial = self.state
+            # if count == 15:
+            #     console.log("[bold orange] Board Not Connected Properly")
+            #     exit_program()
+            count += 1
 
     @property
-    def tilt_state(self):
+    def tilt_state(self) -> str:
         if self.state > self.mid_end:
             return "right"
 
@@ -98,7 +111,7 @@ class SteerWheel(Sensor):
 
         return "straight"
 
-    def onchange(self) -> None:
+    async def onchange(self) -> None:
         key: str = self.keymap.get(self.tilt_state, "")
 
         # if there is a key to press and that key is not the key already pressed
@@ -112,6 +125,7 @@ class SteerWheel(Sensor):
         self.prev_state = self.state
         # set the key_pressed to the current key (for the next round)
         self.key_pressed = key
+        await asyncio.sleep(0.5)
 
     def __repr__(self):
         return colorize(
@@ -119,3 +133,29 @@ class SteerWheel(Sensor):
                 {colorize(self.state, 'cyan')})",
             "purple",
         )
+
+
+# class RotaryEncoder:
+#     def __init__(self) -> None:
+#         self.clk_pin: Pin = board.get_pin("d:2:i")
+#         self.dt_pin: Pin = board.get_pin("d:2:i")
+#         self.prev_state: Tuple[bool, bool] = (False, False)
+#         self.count = 0
+
+#     @property
+#     def state(self) -> Tuple[bool, bool]:
+#         return self.clk_pin.read(), self.dt_pin.read()
+
+#     def is_changed(self):
+#         return self.prev_state != self.state
+
+#     def counter(self):
+#         clk_state, dt_state = self.state
+#         if clk_state != dt_state:
+#             self.count += 1
+
+#         else:
+#             self.count -= 1
+
+#     def onchange(self):
+#         pass
