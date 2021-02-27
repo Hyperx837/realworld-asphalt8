@@ -13,6 +13,8 @@ with console.status(
     board = ArduinoNano()
     console.log("[green] Board Initialized!!!")
 
+pyautogui.FAILSAFE = False
+
 
 class Sensor:
     def __init__(self) -> None:
@@ -57,7 +59,7 @@ class Button(Sensor):
         """
         return not super().state
 
-    async def onchange(self) -> None:
+    def onchange(self) -> None:
         if self.state:
             pyautogui.keyDown(self.key)
 
@@ -117,20 +119,20 @@ class SteerWheel(Sensor):
 
         return "straight"
 
-    async def onchange(self) -> None:
+    def onchange(self) -> None:
         key: str = self.keymap.get(self.tilt, "")
+        pyautogui.press(key)
+        # # if there is a key to press and that key is not the key already pressed
+        # if key and self.key_pressed != key:
+        #     pyautogui.keyDown(key)
+        #     pyautogui.keyUp(self.key_pressed)
 
-        # if there is a key to press and that key is not the key already pressed
-        if key and self.key_pressed != key:
-            pyautogui.keyDown(key)
-            pyautogui.keyUp(self.key_pressed)
+        # elif not key and self.key_pressed:
+        #     pyautogui.keyUp(self.key_pressed)
 
-        elif not key and self.key_pressed:
-            pyautogui.keyUp(self.key_pressed)
-
-        self.prev_state = self.state
-        # # set the key_pressed to the current key (for the next round)
-        self.key_pressed = key
+        # self.prev_state = self.state
+        # # # set the key_pressed to the current key (for the next round)
+        # self.key_pressed = key
 
     def __repr__(self):
         return colorize(
@@ -138,29 +140,3 @@ class SteerWheel(Sensor):
                 {colorize(self.state, 'cyan')})",
             "purple",
         )
-
-
-# class RotaryEncoder:
-#     def __init__(self) -> None:
-#         self.clk_pin: Pin = board.get_pin("d:2:i")
-#         self.dt_pin: Pin = board.get_pin("d:2:i")
-#         self.prev_state: Tuple[bool, bool] = (False, False)
-#         self.count = 0
-
-#     @property
-#     def state(self) -> Tuple[bool, bool]:
-#         return self.clk_pin.read(), self.dt_pin.read()
-
-#     def is_changed(self):
-#         return self.prev_state != self.state
-
-#     def counter(self):
-#         clk_state, dt_state = self.state
-#         if clk_state != dt_state:
-#             self.count += 1
-
-#         else:
-#             self.count -= 1
-
-#     def onchange(self):
-#         pass

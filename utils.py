@@ -17,7 +17,7 @@ class NoValidPortError(Exception):
     pass
 
 
-class BoardNotPluggedError(Exception):
+class BoardUnpluggedError(Exception):
     pass
 
 
@@ -26,11 +26,11 @@ def colorize(text: str, color: str) -> str:
 
 
 def forever(*, delay: float):
-    def wrapper(coro: Callable):
-        @functools.wraps(coro)
+    def wrapper(func: Callable):
+        @functools.wraps(func)
         async def wrapped(*args, **kwargs):
             while True:
-                await coro(*args, **kwargs)
+                func(*args, **kwargs)
                 await asyncio.sleep(delay)
 
         return wrapped
@@ -44,17 +44,17 @@ def get_color(text: bool):
 
 
 def get_port():
-    if sys.platform == "linux":
-        try:
+    try:
+        if sys.platform == "linux":
             (port,) = glob.glob("/dev/ttyUSB*")
-        except ValueError:
-            raise BoardNotPluggedError
-    elif sys.platform == "win32":
-        comports = list_ports.comports()
-        (port, *_) = (port[0] for port in comports if "USB-SERIAL" in port[1])
-    else:
-        # set an environment variable for port or set port manually
-        port = os.environ.get("PORT")
+        elif sys.platform == "win32":
+            comports = list_ports.comports()
+            (port,) = (port[0] for port in comports if "USB-SERIAL" in port[1])
+        else:
+            # set an environment variable for port or set port manually
+            port = os.environ.get("PORT")
+    except ValueError:
+        raise BoardUnpluggedError
 
     return port
 

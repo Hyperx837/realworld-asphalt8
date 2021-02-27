@@ -1,5 +1,5 @@
 import asyncio
-from typing import Awaitable, List, Set, Union
+from typing import Set, Union
 
 from sensor import Button, SteerWheel
 from utils import console, exit_program, forever
@@ -20,29 +20,28 @@ clear_line = "\033[A\033[A"
 
 
 @forever(delay=1)
-async def log_status():
+def log_status():
     """logs the status of given sensor with a 1 min delay"""
     print(clear_line)
     console.log(f"{sensors}")
 
 
 @forever(delay=0.01)
-async def button_observer() -> None:
+def button_observer() -> None:
     """run this code until arduino turns off"""
-    changed_buttons: List[Awaitable] = [
-        button.onchange() for button in buttons if button.is_changed()
-    ]
-    await asyncio.gather(*changed_buttons)
+    for button in sensors:
+        if button.is_changed():
+            button.onchange()
 
 
-@forever(delay=0.05)
-async def steerwheel_observer():
-    if steer.is_changed():
-        await steer.onchange()
+# @forever(delay=0.05)
+# def steerwheel_observer():
+#     if steer.is_changed():
+#         steer.onchange()
 
 
 async def main():
-    tasks = [log_status(), steerwheel_observer(), button_observer()]
+    tasks = [log_status(), button_observer()]
     try:
         await asyncio.gather(*tasks)
 
