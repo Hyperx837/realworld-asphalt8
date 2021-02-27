@@ -9,7 +9,7 @@ real world asphalt (RWA in short) is a physical controller for Asphalt8 (by chan
 
 ### How it works?
 
-there are two buttons under each paddle that you see in the image. there is another button close to the right hand in the steering wheel. and two tilt sensors in either sides of steering wheel. when a button is pressed the program identifies the signal and then presses the key accordingly. when steering wheel is turned program identifies whether it's center, left or right according to the tilt. all the keys can be pressed parallely. here are the buttons and the keys supposed to be pressed.
+there are two buttons under each paddle that you see in the image. there is another button close to the right hand in the steering wheel. and steering wheel is attached to a potentiometer. when a button is pressed the program identifies the signal and then presses the key accordingly. when steering wheel is turned program identifies whether it's center, left or right according to the tilt. all the keys can be pressed parallely. here are the buttons and the keys supposed to be pressed.
 
 **_Buttons_**
 
@@ -29,8 +29,14 @@ there are two buttons under each paddle that you see in the image. there is anot
 - poetry (optinal)
 - an arduino
 - 3 buttons (script will run without buttons)
+- Arduino IDE (btw if we call it an IDE vim is an OS)
 
-### Running the project
+### Getting started
+
+Install arduino IDE from [www.arduino.cc](https://www.arduino.cc/) and install it.
+
+upload the Standardfirmata sketch to
+the arduino from firmata library.
 
 first clone the project cd into it
 
