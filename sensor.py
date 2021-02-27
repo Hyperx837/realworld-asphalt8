@@ -1,5 +1,5 @@
 import asyncio
-from typing import Union
+from typing import Coroutine, Dict, Union
 
 import pyautogui
 from pyfirmata import Pin
@@ -76,12 +76,13 @@ class Button(Sensor):
 
 
 class SteerWheel(Sensor):
-    def __init__(self, keymap: dict) -> None:
+    def __init__(self, keymap: Dict[str, str]) -> None:
         super().__init__()
         self.pin: Pin = board.get_pin("a:7:i")
         self.keymap = keymap
         self.prev_state: float = 0
         self.initial: float = 0
+        self.keypresser: Coroutine = self.press_key()
         self.initialize_input()
         self.range = 0.06
         self.light_turn: bool = False
@@ -91,6 +92,7 @@ class SteerWheel(Sensor):
             f"[bold cyan] Steering Wheel middle ranging from {self.mid_start} to \
             {self.mid_end}"
         )
+        self.key: str = ""
         self.key_pressed: str = ""
 
     def initialize_input(self) -> None:
@@ -114,40 +116,55 @@ class SteerWheel(Sensor):
     @property
     def tilt(self) -> str:
         if self.state > self.mid_end:
-            if (self.state - self.mid_end) < 0.1:
-                self.light_turn = True
-            else:
-                self.light_turn = False
+            # if (self.state - self.mid_end) < 0.1:
+            #     self.light_turn = True
+            # else:
+            #     self.light_turn = False
 
             return "right"
 
         elif self.state < self.mid_start:
-            if (self.mid_start - self.state) < 0.1:
-                self.light_turn = True
-            else:
-                self.light_turn = False
+            # if (self.mid_start - self.state) < 0.1:
+            #     self.light_turn = True
+            # else:
+            #     self.light_turn = False
             return "left"
 
         return "straight"
 
+    @property
+    def angle(self):
+        if self.tilt not in ("left", "right"):
+            return 0
+
     async def onchange(self) -> None:
-        key: str = self.keymap.get(self.tilt, "")
-        if key and self.light_turn:
-            pyautogui.keyDown(key)
-            await asyncio.sleep(0.005)
-            pyautogui.keyUp(key)
-        else:
-            # if there is a key to press and that key is not the key already pressed
-            if key and self.key_pressed != key:
-                pyautogui.keyDown(key)
-                pyautogui.keyUp(self.key_pressed)
+        self.key = self.keymap.get(self.tilt, "")
+        keypresser = self.press_key()
+        asyncio.create_task(keypresser)
+        self.prev_keypresser = keypresser
+        # if key and self.light_turn:
+        #     pyautogui.keyDown(key)
+        #     await asyncio.sleep(0.005)
+        #     pyautogui.keyUp(key)
+        # else:
+        #     # if there is a key to press and that key is not the key already pressed
+        #     if key and self.key_pressed != key:
+        #         pyautogui.keyDown(key)
+        #         pyautogui.keyUp(self.key_pressed)
 
-            elif not key and self.key_pressed:
-                pyautogui.keyUp(self.key_pressed)
+        #     elif not key and self.key_pressed:
+        #         pyautogui.keyUp(self.key_pressed)
 
-            self.prev_state = self.state
-            # # set the key_pressed to the current key (for the next round)
-            self.key_pressed = key
+        #     self.prev_state = self.state
+        #     # # set the key_pressed to the current key (for the next round)
+        #     self.key_pressed = key
+
+    async def press_key(self):
+        if not self.key:
+            return
+        pyautogui.keyDown(self.key)
+        await asyncio.sleep(0.005)
+        pyautogui.keyUp(self.key)
 
     def __repr__(self):
         return colorize(

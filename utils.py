@@ -1,4 +1,5 @@
 import asyncio
+from inspect import iscoroutinefunction
 import functools
 import glob
 import os
@@ -30,7 +31,11 @@ def forever(*, delay: float):
         @functools.wraps(func)
         async def wrapped(*args, **kwargs):
             while True:
-                func(*args, **kwargs)
+                if iscoroutinefunction(func):
+                    await func(*args, **kwargs)
+                else:
+                    func(*args, **kwargs)
+
                 await asyncio.sleep(delay)
 
         return wrapped
