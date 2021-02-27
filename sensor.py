@@ -1,3 +1,4 @@
+import asyncio
 from typing import Union
 
 import pyautogui
@@ -119,9 +120,11 @@ class SteerWheel(Sensor):
 
         return "straight"
 
-    def onchange(self) -> None:
+    async def onchange(self) -> None:
         key: str = self.keymap.get(self.tilt, "")
-        pyautogui.press(key)
+        pyautogui.keyDown(key)
+        await asyncio.sleep(0.005)
+        pyautogui.keyUp(key)
         # # if there is a key to press and that key is not the key already pressed
         # if key and self.key_pressed != key:
         #     pyautogui.keyDown(key)

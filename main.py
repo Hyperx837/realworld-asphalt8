@@ -34,14 +34,15 @@ def button_observer() -> None:
             button.onchange()
 
 
-# @forever(delay=0.05)
-# def steerwheel_observer():
-#     if steer.is_changed():
-#         steer.onchange()
+async def steerwheel_observer():
+    while True:
+        if steer.is_changed():
+            await steer.onchange()
+        await asyncio.sleep(0.01)
 
 
 async def main():
-    tasks = [log_status(), button_observer()]
+    tasks = [log_status(), button_observer(), steerwheel_observer()]
     try:
         await asyncio.gather(*tasks)
 
