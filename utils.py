@@ -1,6 +1,9 @@
+import asyncio
+import functools
 import glob
 import os
 import sys
+from typing import Callable
 
 import pyfirmata
 import serial
@@ -20,6 +23,19 @@ class BoardNotPluggedError(Exception):
 
 def colorize(text: str, color: str) -> str:
     return f"[{color}]{text}[/{color}]"
+
+
+def forever(*, delay: float):
+    def wrapper(coro: Callable):
+        @functools.wraps(coro)
+        async def wrapped(*args, **kwargs):
+            while True:
+                await coro(*args, **kwargs)
+                await asyncio.sleep(delay)
+
+        return wrapped
+
+    return wrapper
 
 
 def get_color(text: bool):

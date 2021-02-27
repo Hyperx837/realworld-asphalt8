@@ -2,9 +2,10 @@ import asyncio
 from typing import Awaitable, List, Set, Union
 
 from sensor import Button, SteerWheel
-from utils import console, exit_program
+from utils import console, exit_program, forever
 
 button_data = {10: "s", 11: " ", 12: "w"}
+# button_data = {11: " ", 12: "w"}
 buttons: Set[Button] = {Button(pin, key) for pin, key in button_data.items()}
 
 # keys to press when steer wheel is straight or turned right or left
@@ -18,28 +19,34 @@ sensors: Set[SENSOR_TYPE] = {*buttons, steer}
 clear_line = "\033[A\033[A"
 
 
+@forever(delay=1)
 async def log_status():
     """logs the status of given sensor with a 1 min delay"""
-    while True:
-        print(clear_line)
-        console.log(f"{sensors}")
-        await asyncio.sleep(1)
+    print(clear_line)
+    console.log(f"{sensors}")
 
 
-async def main() -> None:
+@forever(delay=0.01)
+async def button_observer() -> None:
     """run this code until arduino turns off"""
-    try:
-        logger = asyncio.create_task(log_status())
-        while True:
-            changed_sensors: List[Awaitable] = [
-                sensor.onchange() for sensor in sensors if sensor.is_changed()
-            ]
-            asyncio.gather(*changed_sensors)
+    changed_buttons: List[Awaitable] = [
+        button.onchange() for button in buttons if button.is_changed()
+    ]
+    await asyncio.gather(*changed_buttons)
 
-            await asyncio.sleep(0.01)
+
+@forever(delay=0.05)
+async def steerwheel_observer():
+    if steer.is_changed():
+        await steer.onchange()
+
+
+async def main():
+    tasks = [log_status(), steerwheel_observer(), button_observer(), steer.press_key()]
+    try:
+        await asyncio.gather(*tasks)
 
     except KeyboardInterrupt:
-        logger.cancel()
         print(clear_line, "\n")
 
     exit_program()
