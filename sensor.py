@@ -84,6 +84,7 @@ class SteerWheel(Sensor):
         self.initial: float = 0
         self.initialize_input()
         self.range = 0.06
+        self.light_turn: bool = False
         self.mid_start = self.initial - self.range
         self.mid_end = self.initial + self.range
         console.log(
@@ -113,29 +114,40 @@ class SteerWheel(Sensor):
     @property
     def tilt(self) -> str:
         if self.state > self.mid_end:
+            if (self.state - self.mid_end) < 0.1:
+                self.light_turn = True
+            else:
+                self.light_turn = False
+
             return "right"
 
         elif self.state < self.mid_start:
+            if (self.mid_start - self.state) < 0.1:
+                self.light_turn = True
+            else:
+                self.light_turn = False
             return "left"
 
         return "straight"
 
     async def onchange(self) -> None:
         key: str = self.keymap.get(self.tilt, "")
-        pyautogui.keyDown(key)
-        await asyncio.sleep(0.005)
-        pyautogui.keyUp(key)
-        # # if there is a key to press and that key is not the key already pressed
-        # if key and self.key_pressed != key:
-        #     pyautogui.keyDown(key)
-        #     pyautogui.keyUp(self.key_pressed)
+        if key and self.light_turn:
+            pyautogui.keyDown(key)
+            await asyncio.sleep(0.005)
+            pyautogui.keyUp(key)
+        else:
+            # if there is a key to press and that key is not the key already pressed
+            if key and self.key_pressed != key:
+                pyautogui.keyDown(key)
+                pyautogui.keyUp(self.key_pressed)
 
-        # elif not key and self.key_pressed:
-        #     pyautogui.keyUp(self.key_pressed)
+            elif not key and self.key_pressed:
+                pyautogui.keyUp(self.key_pressed)
 
-        # self.prev_state = self.state
-        # # # set the key_pressed to the current key (for the next round)
-        # self.key_pressed = key
+            self.prev_state = self.state
+            # # set the key_pressed to the current key (for the next round)
+            self.key_pressed = key
 
     def __repr__(self):
         return colorize(

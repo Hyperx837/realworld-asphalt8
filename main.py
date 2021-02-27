@@ -29,7 +29,7 @@ def log_status():
 @forever(delay=0.01)
 def button_observer() -> None:
     """run this code until arduino turns off"""
-    for button in sensors:
+    for button in buttons:
         if button.is_changed():
             button.onchange()
 
