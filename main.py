@@ -42,7 +42,7 @@ async def steerwheel_observer():
 
 
 async def main():
-    tasks = [log_status(), steerwheel_observer(), button_observer(), steer.press_key()]
+    tasks = [log_status(), steerwheel_observer(), button_observer()]
     try:
         await asyncio.gather(*tasks)
 
